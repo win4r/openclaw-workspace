@@ -78,7 +78,35 @@ Common sources of redundancy to check:
 
 ---
 
-## Memory Distillation Process
+## Memory Distillation: Heartbeat vs Manual
+
+官方推荐优先用 **heartbeat** 完成记忆精炼，而非纯手动触发。
+
+### 在 Heartbeat 中自动精炼（推荐）
+
+在 HEARTBEAT.md 里加入定期精炼任务：
+
+```markdown
+## Memory Maintenance (every few days)
+1. Read recent memory/YYYY-MM-DD.md files
+2. Identify significant events, lessons, insights worth keeping long-term
+3. Update MEMORY.md with distilled learnings
+4. Remove outdated entries from MEMORY.md
+```
+
+配合 `memory/heartbeat-state.json` 记录上次精炼时间：
+
+```json
+{
+  "lastChecks": {
+    "memoryDistillation": 1703275200,
+    "email": 1703260800,
+    "calendar": null
+  }
+}
+```
+
+### 手动精炼流程
 
 Run this monthly (or when MEMORY.md exceeds 10,000 chars):
 
@@ -170,12 +198,70 @@ Target: Under 80,000 chars total for the regularly-loaded set. The 150,000 char 
 
 ---
 
+## HEARTBEAT.md Optimization
+
+两个官方推荐的配置优化：
+
+**1. 使用 `lightContext: true` 减少 token 消耗**
+
+在 `openclaw.json` 中为 heartbeat 开启精简模式：
+```json5
+{
+  agents: {
+    defaults: {
+      heartbeat: {
+        lightContext: true  // 最小化 bootstrap 注入
+      }
+    }
+  }
+}
+```
+
+**2. OpenClaw 自动跳过空 HEARTBEAT.md**
+
+如果 HEARTBEAT.md 只包含空行和 Markdown 标题，OpenClaw 会自动跳过执行，节省 API 调用。所以保持文件简洁也有节省成本的效果。
+
+---
+
+## Git 备份最佳实践
+
+官方推荐用私有 Git 仓库备份工作区文件，方便跨机器迁移：
+
+```bash
+cd ~/.openclaw/workspace
+git init
+git remote add origin <your-private-repo>
+```
+
+**应该提交的文件：**
+```
+AGENTS.md, SOUL.md, TOOLS.md, IDENTITY.md, USER.md, HEARTBEAT.md
+memory/YYYY-MM-DD.md
+checklists/
+docs/
+```
+
+**绝对不要提交：**
+```
+secrets、.env 文件、.key/.pem 文件、credentials/
+任何包含 API key 或 token 的文件
+```
+
+**迁移到新机器：**
+```bash
+git clone <repo> ~/.openclaw/workspace
+openclaw setup --workspace ~/.openclaw/workspace  # 补充缺失的模板文件
+```
+
+---
+
 ## Quick Wins
 
 When asked to optimize a workspace and time is short:
 
-1. **MEMORY.md audit** — most frequent source of bloat; apply strict iron-law test to every entry
+1. **MEMORY.md audit** — most frequent source of bloat; review each entry against the "curated essence" standard
 2. **Inline content in AGENTS.md** — anything more than a one-liner that could be a `docs/` reference
 3. **TOOLS.md cruft** — SSH hosts that no longer exist, old device IDs, deprecated voice settings
 4. **USER.md staleness** — preferences that changed, projects that ended, contacts that are no longer relevant
 5. **Checklist table vs inline steps** — make sure AGENTS.md has the table, not the steps themselves
+6. **HEARTBEAT.md `lightContext`** — enable in config if heartbeat token cost is high

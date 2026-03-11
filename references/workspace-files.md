@@ -105,9 +105,9 @@ How the agent should think about session persistence and memory.
 
 **Purpose:** Environment-specific cheat sheet. Answers "what do I have access to on THIS machine?"
 
-**Loaded:** Every turn (main agent + sub-agents).
+**Loaded:** On-demand reference; part of the standard bootstrap set received by all agents.
 
-**Why it matters:** Sub-agents only receive AGENTS.md and TOOLS.md. TOOLS.md is their only source of environment-specific knowledge (SSH hosts, camera IDs, TTS voices, device names).
+**Why it matters:** All agents (main and sub-agents) receive the standard bootstrap set: AGENTS.md, SOUL.md, USER.md, IDENTITY.md, TOOLS.md. TOOLS.md is the shared source of environment-specific knowledge (SSH hosts, camera IDs, TTS voices, device names).
 
 ### Recommended Sections
 
@@ -143,7 +143,7 @@ Any other env-specific notes.
 
 **Purpose:** Human profile — who the agent is working with, their preferences, communication style, and relationship context.
 
-**Loaded:** Every turn, main sessions only (NOT sub-agents, NOT groups).
+**Loaded:** Every turn; part of the standard bootstrap set received by all agents.
 
 **Why it matters:** Lets the agent personalize interactions without having to re-learn preferences from scratch each session.
 
@@ -171,9 +171,9 @@ Family, colleagues, recurring contacts (if relevant).
 
 ### Anti-Patterns
 
-- Project-specific task notes (those go in daily memory logs or LanceDB)
+- Project-specific task notes (those go in daily memory logs or memory_search)
 - Duplicating what's in IDENTITY.md or SOUL.md
-- Loading in sub-agent or group sessions (never — this file is private)
+- Sensitive private info that should never surface in any context (use MEMORY.md with its main-session-only gate instead)
 
 ---
 
@@ -293,24 +293,24 @@ System/service health to verify.
 
 ## MEMORY.md
 
-**Purpose:** Long-term curated facts and iron-law rules that must be loaded every session — things too important to leave to LanceDB recall.
+**Purpose:** Long-term curated memory — significant events, decisions, opinions, lessons learned, and critical rules that must be in context every session.
 
 **Loaded:** Main sessions only. NEVER in group chats or sub-agent sessions.
 
-**Why it matters:** LanceDB handles episodic memory, but some rules are so critical that they must be in context every turn. MEMORY.md is the list of those rules.
+**Why it matters:** OpenClaw uses SQLite-based memory indexing (`~/.openclaw/memory/<agentId>.sqlite`) for episodic recall via `memory_search`. MEMORY.md complements this by holding the distilled essence that should always be in context — not just recallable on demand.
 
 ### Design Principles
 
-- **Iron laws only.** If it's not a rule that would cause a serious incident if forgotten, it doesn't belong here.
-- **Short and atomic.** Each rule should be one sentence to one short paragraph, with clear action implications.
+- **Curated essence, not raw logs.** Write significant events, thoughts, decisions, opinions, lessons learned. The daily logs are raw notes; MEMORY.md is the distilled wisdom.
+- **Short and atomic.** Each entry should be one sentence to one short paragraph with clear implications.
 - **Security gating is mandatory.** The boot sequence in AGENTS.md must gate MEMORY.md loading: "Main session only."
-- **Actively curate.** Rules that have been incident-free for months are probably stable enough to move to a skill SKILL.md. Rules about tasks that are now complete should be removed.
+- **Actively curate via heartbeat.** Use periodic heartbeats to review daily logs and update MEMORY.md every few days. Remove outdated entries.
 
 ### Anti-Patterns
 
-- Session summaries or conversation histories
+- Raw session logs or conversation transcripts (those belong in daily logs)
 - Rules that duplicate content in skill SKILL.md files
-- Task-specific notes (use daily logs or LanceDB)
+- Task-specific notes (use daily logs or memory_search)
 - Loading in groups or sub-agents (NEVER)
 - Growing indefinitely without periodic distillation
 
@@ -327,7 +327,8 @@ System/service health to verify.
 ### Design Principles
 
 - Append-only during active sessions; summarize at end of day.
-- Facts worth keeping long-term should be promoted to MEMORY.md or stored to LanceDB.
+- Recommended: load **today + yesterday** in the boot sequence (gives short-term continuity without excessive token cost).
+- Facts worth keeping long-term should be promoted to MEMORY.md or stored via memory_search (SQLite).
 - Archive or delete logs older than 30 days.
 
 ---
@@ -362,3 +363,23 @@ System/service health to verify.
 - Each checklist should be completable in one reading — no back-and-forth lookups needed.
 - If a checklist exceeds ~50 lines, split it or move narrative context to `docs/`.
 - Register every checklist in the AGENTS.md checklists table.
+
+---
+
+## skills/ (Workspace-Local Skills)
+
+**Purpose:** Workspace-specific skill overrides. If a skill here has the same name as a managed skill, the workspace version takes precedence.
+
+**Loaded:** Dynamic, on name collision with managed skills.
+
+**Why it matters:** Allows per-agent customization of skills without touching the global skills directory.
+
+---
+
+## canvas/ (Canvas UI Files)
+
+**Purpose:** Canvas UI files for Node display rendering (e.g., `index.html`).
+
+**Loaded:** On demand by Node clients.
+
+**Why it matters:** Enables custom visual interfaces displayed on connected nodes (iOS, Android, macOS app).

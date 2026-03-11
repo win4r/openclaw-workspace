@@ -17,8 +17,8 @@ OpenClaw workspace files form the agent's "soul and memory" — they are injecte
 |------|---------|-------------|-------------|
 | `AGENTS.md` | Boot sequence, checklists, behavioral rules | Every turn (all agents) | Yes |
 | `SOUL.md` | Persona, tone, values, continuity philosophy | Every turn (all agents) | Yes |
-| `TOOLS.md` | Env-specific notes (SSH, TTS, cameras, devices) | Every turn (main + sub-agents) | Yes |
-| `USER.md` | Human profile, preferences, relationship context | Every turn (main sessions only) | No |
+| `TOOLS.md` | Env-specific notes (SSH, TTS, cameras, devices) | On-demand reference (part of bootstrap set) | Yes |
+| `USER.md` | Human profile, preferences, relationship context | Every turn (all agents) | Yes |
 | `IDENTITY.md` | Name, emoji, avatar, self-description | Every turn | Yes |
 | `HEARTBEAT.md` | Periodic check tasks and health routines | Every heartbeat turn | Depends |
 | `BOOT.md` | Startup actions (requires `hooks.internal.enabled`) | On gateway startup | No |
@@ -63,7 +63,7 @@ Use when workspace files may be bloated, stale, or redundant.
 3. **Flag files over 10,000 chars** — prime candidates for trimming or offloading to `docs/`
 4. **Check for redundancy** — same fact in SOUL.md and AGENTS.md? Same tool note in TOOLS.md and MEMORY.md?
 5. **Check for staleness** — outdated SSH hosts, old tool names, deprecated rules, historical context that's no longer needed
-6. **Check MEMORY.md discipline** — should contain only iron-law rules and critical facts, not long narratives
+6. **Check MEMORY.md discipline** — should contain curated facts, lessons learned, decisions, and critical rules — not raw session summaries or task-specific notes
 7. **Propose targeted edits** — trim, move to docs/, or restructure
 
 See [references/optimization-guide.md](references/optimization-guide.md) for specific optimization strategies.
@@ -100,7 +100,7 @@ Use periodically (weekly or monthly) to keep MEMORY.md lean.
 2. **Identify candidates for promotion to MEMORY.md:**
    - Rules violated more than once (recurring mistakes)
    - Hard-won discoveries that aren't in skills docs
-   - Env-specific facts that LanceDB shouldn't need to surface (always relevant)
+   - Env-specific facts that should always be in context (not left to memory_search recall)
 3. **Check what's already in MEMORY.md** — avoid duplicates
 4. **Draft additions** — use iron-law format: concise, action-oriented, unambiguous
 5. **Archive old daily logs** — move files older than 30 days to `memory/archive/` or delete
@@ -110,7 +110,7 @@ Use periodically (weekly or monthly) to keep MEMORY.md lean.
 - Long narratives or session summaries
 - Things already covered in skill docs
 - Anything specific to a single past task
-- Anything that belongs in LanceDB (episodic, task-specific memories)
+- Episodic or task-specific memories (store those via memory_search/SQLite instead)
 
 ## Workflow: Add or Update a Checklist
 
