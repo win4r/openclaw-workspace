@@ -1,3 +1,5 @@
+[Bilibili profile](https://space.bilibili.com/3493277319825652)
+
 # openclaw-workspace
 
 A [Claude Code](https://claude.ai/claude-code) skill for maintaining and optimizing [OpenClaw](https://openclaw.ai) workspace files — the markdown files that form an AI agent's soul, memory, and operating procedures.

@@ -1,3 +1,5 @@
+[哔哩哔哩主页](https://space.bilibili.com/3493277319825652)
+
 # openclaw-workspace
 
 一个用于维护和优化 [OpenClaw](https://openclaw.ai) 工作区文件的 [Claude Code](https://claude.ai/claude-code) 技能包。这些 Markdown 文件构成了 AI Agent 的"灵魂"、记忆系统与操作规程。
